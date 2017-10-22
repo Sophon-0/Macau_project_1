@@ -1,0 +1,365 @@
+---
+title: "A multi-task learning framework to uncover orthogonal feature interactions in large scale drug screening experiments"
+author: "MI YANG"
+date: "`r doc_date()`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::html_document
+---
+
+```{r include=FALSE, cache=FALSE}
+source("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/interaction_matrix_Functions.R")
+source("/Users/miyang/Documents/RWTH_Aachen/FUNCTIONS/PLOT.R")
+source("/Users/miyang/Documents/RWTH_Aachen/FUNCTIONS/general_functions.R")
+target <- read.csv("/Users/miyang/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA/target", check.names = F) ; drug_names <- target[ ,1] ; target <- target[ ,-1]
+DRUG_ANALYSIS_SET_update$Drug.Name <- DRUG_ANALYSIS_SET$DRUG_NAME
+colnames(target)[ which(colnames(target)=="dsDNA break induction") ] <- "dsDNA break"
+DRUG_ANALYSIS_SET_update$Target[ grep("dsDNA break induction" ,  DRUG_ANALYSIS_SET_update$Target ) ] <- "dsDNA break"
+
+tissue_label_gdsc <- read.csv("~/Documents/RWTH_Aachen/SANGER_DATA/tissue_label_gdsc_ID", row.names=1)
+table(tissue_label_gdsc$tissue) ; names(which(table(tissue_label_gdsc$tissue) > 20)) 
+tissue <- c("aero_dig_tract","bone","brain","breast","colon","kidney","leukemia","liver","lung_NSCLC","lung_SCLC","lymphoma","ovary","pancreas","skin","soft_tissue","stomach")
+#  print_target_GDSC ( protein_target= "ERBB2" , target_matrix=target, drug_names=drug_names )
+```
+
+
+# Scatter plot by progeny
+
+```{r include=FALSE, cache=FALSE}
+load(paste(path,"/SANGER_DATA/v17a_IC50s.Rdata", sep="")) 
+IC50 <- t(v17a_IC50s);IC50 <- convert_drugID(IC50)
+
+#  tissue_name="brain" ; features="progeny11" ; pathway_name="JAK.STAT" ; target_name="PLK1" , drug_number=1 ; text_size=26 ; title_size=2
+#  pathway_name=c("EGFR","JAK.STAT")
+
+scatter_plot_tissue <- function(tissue_name,features,pathway_name,target_name,drug_number=1,text_size=26,title_size=2.5) {
+  pathway <- read.csv(paste0("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/TISSUE/",tissue_name,"/",features),row.names = 1)
+  if(length(pathway_name)==1) { p <- pathway[ ,pathway_name] } 
+  else { p <- pathway[ ,pathway_name[1]]-pathway[ ,pathway_name[2]] ; pathway_name = paste0(pathway_name[1]," - ",pathway_name[2]) } # first pathway - second pathway
+  
+  names(p) <- rownames(pathway)
+  drug <- print_target_GDSC ( protein_target=target_name, target_matrix=target, drug_names=drug_names ); print(drug)
+  drug <- drug$DRUG_NAME[drug_number]
+  drug_response <- IC50[drug, names(p)]
+  d <- cbind(p, drug_response) ; d <- d[complete.cases(d), ] ; colnames(d) <- c("a","b") ; df <- as.data.frame(d)
+  
+  # equation, correlation and p value
+  out <- cor.test(df$a,df$b) ; r <- out$estimate ; p <- out$p.value
+  lm_eqn <- function(df){
+      m <- lm(b ~ a, df);
+      eq <- substitute(~~italic("r")~"="~r*","~~italic("p")~"="~p,
+           list(a = format(coef(m)[1], digits = 2), 
+                b = format(coef(m)[2], digits = 2), 
+                r = format(r, digits = 2),
+                p = format(p, digits=2)))
+      as.character(as.expression(eq));                 
+  }
+  
+  # Compute 
+  g <- ggplot(df, aes(a, b, color = b)) + 
+    geom_point(shape = 16, size = 5, show.legend = FALSE, alpha = .8 ) +  geom_smooth(method=lm,se=F,show.legend=F) + 
+    labs(x = pathway_name, y="IC50" ) + ggtitle(paste0(drug," (",target_name,")"," in ",tissue_name)) + 
+    theme(legend.position="bottom",axis.text=element_text(size= text_size) , axis.title= element_text(size= text_size), plot.title = element_text(size =rel(title_size), hjust = 0.5 ),
+          panel.background = element_rect(fill='white'),panel.grid.major = element_line(colour = "grey90")) + 
+    geom_text(x = min(df$a) + 0.5*(max(df$a)-min(df$a)), y = min(df$b) + 0.25*(max(df$b)-min(df$b)) , label = lm_eqn(df), parse = TRUE,show.legend=F,color="black",size = 10) + 
+    scale_color_gradient(low = "#f0650e", high = "#0091ff" ) #  
+  g
+}
+scatter_plot_tissue( "brain" , "progeny11" , "JAK.STAT" , "PLK1" , 1 )
+scatter_plot_tissue( "skin" , "progeny11" , "TNFa" , "TOP1" , 2 )
+scatter_plot_tissue( "skin" , "progeny11" , c("MAPK","VEGF") , "BRAF" , 6 )
+scatter_plot_tissue( "brain" , "progeny11" , c("JAK.STAT","EGFR") , "PLK1" , 1 )
+
+```
+
+
+# single pathway predictor plot 
+```{r include=FALSE, cache=FALSE}
+# tissue_name="aero_dig_tract" ; features="progeny14" ; pathway_name="MAPK" ; target_name="EGFR"
+library(cowplot)
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/GDSC_target_progeny_Scatter_Plot/"
+
+pdf(file=paste0(result_folder,"aero_dig_tract",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue("aero_dig_tract","progeny11","Trail","HDAC1", 4) # 4
+figure2 <- scatter_plot_tissue("aero_dig_tract","progeny11","PI3K","MTOR" , 2)
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"bone",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "bone", "progeny11", "NFkB", "MTORC1", 2 )
+figure2 <- scatter_plot_tissue( "bone", "progeny11", "JAK.STAT", "PLK1" , 2 )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"brain",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "brain", "progeny11", "EGFR", "PLK1" )
+# figure2 <- scatter_plot_tissue("brain","progeny11","TNFa","PI3Kbeta")
+figure2 <- scatter_plot_tissue( "brain", "progeny11", "EGFR", "MTORC2",3)
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"breast",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "breast", "progeny11", "TNFa", "ERBB2" )
+figure2 <- scatter_plot_tissue( "breast", "progeny11", "EGFR", "ERBB2" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"colon",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "colon", "progeny11", "NFkB", "HSP90" , 5)
+figure2 <- scatter_plot_tissue( "colon", "progeny11", "TNFa", "dsDNA break" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"kidney",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+# scatter_plot_tissue( "kidney", "progeny11", "JAK.STAT", "dsDNA break induction" )
+figure1 <- scatter_plot_tissue( "kidney", "progeny11", "Hypoxia", "dsDNA break" )
+figure2 <- scatter_plot_tissue( "kidney", "progeny11", "MAPK", "dsDNA break" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"leukemia",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "leukemia", "progeny11", "NFkB", "FLT3" )
+figure2 <- scatter_plot_tissue( "leukemia", "progeny11", "MAPK", "dsDNA break"  )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"liver",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+# scatter_plot_tissue( "liver", "progeny11", "Hypoxia", "TOP1" ) 
+figure1 <- scatter_plot_tissue( "liver", "progeny11", "TGFb", "Farnesyl-transferase (FNTA)" )  
+figure2 <- scatter_plot_tissue( "liver", "progeny11", "Hypoxia", "CDK7", 5 )  
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"lung_NSCLC",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "lung_NSCLC", "progeny11", "TNFa", "dsDNA break", 2 ) 
+figure2 <- scatter_plot_tissue( "lung_NSCLC", "progeny11", "MAPK", "dsDNA break", 2 ) 
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"lung_SCLC",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "lung_SCLC", "progeny11", "VEGF", "TOP1", 2 )
+figure2 <- scatter_plot_tissue( "lung_SCLC", "progeny11", "MAPK", "MCL1"  )  
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"lymphoma",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "lymphoma", "progeny11", "NFkB", "Antimetabolite" )
+figure2 <- scatter_plot_tissue( "lymphoma", "progeny11", "Hypoxia", "ALK" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"ovary",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "ovary", "progeny11", "TNFa", "CDK2", 4 )
+figure2 <- scatter_plot_tissue( "ovary", "progeny11", "p53", "MDM2", 1)
+# scatter_plot_tissue( "ovary", "progeny11", "EGFR", "MEK1" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"pancreas",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "pancreas", "progeny11","TNFa","HDAC1", 6 ) # 6  
+figure2 <- scatter_plot_tissue( "pancreas", "progeny11","Trail","TOP1", 2 ) # 
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"skin",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "skin", "progeny11","VEGF","BRAF" )
+figure2 <- scatter_plot_tissue( "skin", "progeny11","MAPK","BRAF", 6 )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"soft_tissue",".pdf"), width = 11, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "soft_tissue", "progeny11","TNFa","IGF1R" , 3 )
+figure2 <- scatter_plot_tissue( "soft_tissue", "progeny11","TNFa","dsDNA break" , 2)
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"stomach",".pdf"), width = 11, height = 22, compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "stomach", "progeny11","NFkB","ERBB2" , 2 )
+figure2 <- scatter_plot_tissue( "stomach", "progeny11","EGFR","MET" )
+plot_grid(figure2, figure1, ncol = 1, nrow = 2 )
+dev.off()
+
+```
+
+
+# 2 pathway predictor plot
+```{r include=FALSE, cache=FALSE}
+pdf(file=paste0(result_folder,"00_brain_skin_2_pathway_predictor",".pdf"), width = 22, height = 11, compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "skin" , "progeny11" , c("MAPK","VEGF") , "BRAF" , 6 )
+figure2 <- scatter_plot_tissue( "brain" , "progeny11" , c("JAK.STAT","EGFR") , "PLK1" , 1 )
+plot_grid(figure1, figure2, ncol = 2, nrow = 1 )
+dev.off()
+
+```
+
+
+# conceptual plot
+```{r include=FALSE, cache=FALSE}
+library(cowplot)
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/GDSC_target_progeny_Scatter_Plot/"
+
+pdf(file=paste0(result_folder,"00_conceptual_plot",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "ovary", "progeny11", "p53", "MDM2",1)
+figure2 <- scatter_plot_tissue( "lymphoma" , "progeny11", "NFkB", "Antimetabolite",1)
+plot_grid(figure1, figure2, ncol = 2, nrow = 1 )
+dev.off()
+
+```
+
+
+# antagonist tissue, diversity of interaction
+```{r include=FALSE, cache=FALSE}
+library(cowplot)
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/GDSC_target_progeny_Scatter_Plot/00_antagonist_tissue/"
+
+pdf(file=paste0(result_folder,"VEGF_Microtubule_stabiliser",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "colon", "progeny11", "VEGF", "Microtubule stabiliser",1)
+figure2 <- scatter_plot_tissue( "soft_tissue" , "progeny11", "VEGF", "Microtubule stabiliser",1)
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"Hypoxia_ALK",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "lymphoma", "progeny11", "Hypoxia", "ALK", 4 )
+figure2 <- scatter_plot_tissue( "liver" , "progeny11", "Hypoxia", "ALK", 4 )
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"TNFa_HDAC1",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "bone", "progeny11", "TNFa", "HDAC1", 1 )
+figure2 <- scatter_plot_tissue( "pancreas","progeny11", "TNFa", "HDAC1", 7 ) #  5, 6, 7
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+
+pdf(file=paste0(result_folder,"TNFa_PI3Kbeta",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "brain", "progeny11", "TNFa", "PI3Kbeta" )
+figure2 <- scatter_plot_tissue( "skin", "progeny11", "TNFa", "PI3Kbeta"  )
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"NFkB_ERBB2",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "breast", "progeny11", "NFkB", "ERBB2" )
+figure2 <- scatter_plot_tissue( "stomach", "progeny11", "NFkB", "ERBB2")
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+pdf(file=paste0(result_folder,"EGFR_MEK2",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(1,2))
+figure1 <- scatter_plot_tissue( "pancreas", "progeny11", "EGFR", "MEK2", 4 )
+figure2 <- scatter_plot_tissue( "bone", "progeny11","EGFR", "MEK2", 4 )
+plot_grid(figure1, figure2, ncol = 1, nrow = 2 )
+dev.off()
+
+# pdf(file=paste0(result_folder,"EGFR_dsDNA_break",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+# par(mfrow=c(1,2))
+# figure1 <- scatter_plot_tissue( "colon", "progeny14", "EGFR", "dsDNA break", 1 )
+# figure2 <- scatter_plot_tissue( "breast", "progeny14","EGFR", "dsDNA break", 1 )
+# plot_grid(figure1, figure2, ncol = 2, nrow = 1 )
+# dev.off()
+
+```
+
+
+
+```{r include=FALSE, cache=FALSE}
+
+scatter_plot_tissue_2_features <- function(tissue_name, features_1, features_1_name,features_2,features_2_name, target_name, drug_number=1, text_size=26, title_size=2.5) {
+  features_1 <- read.csv(paste0("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/TISSUE/",tissue_name,"/",features_1),row.names = 1)
+  if(length(features_1_name)==1) { p1 <- features_1[ ,features_1_name] } 
+  else { p1 <- features_1[ ,features_1_name[1]]-features_1[ ,features_1_name[2]] ; features_1_name = paste0(features_1_name[1]," - ",features_1_name[2]) } # first pathway - second pathway
+  
+  features_2 <- read.csv(paste0("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/TISSUE/",tissue_name,"/",features_2),row.names = 1)
+  p2 <- features_2[ ,features_2_name] 
+  
+  p <- p1 + p2
+  features_name <- paste0(features_1_name," + ",features_2_name)
+  
+  names(p) <- rownames(features_1)
+  drug <- print_target_GDSC ( protein_target=target_name, target_matrix=target, drug_names=drug_names ); print(drug)
+  drug <- drug$DRUG_NAME[drug_number]
+  drug_response <- IC50[drug, names(p)]
+  d <- cbind(p, drug_response) ; d <- d[complete.cases(d), ] ; colnames(d) <- c("a","b") ; df <- as.data.frame(d)
+  
+  # equation, correlation and p value
+  out <- cor.test(df$a,df$b) ; r <- out$estimate ; p <- out$p.value
+  lm_eqn <- function(df){
+    m <- lm(b ~ a, df);
+    eq <- substitute(~~italic("r")~"="~r*","~~italic("p")~"="~p,
+                     list(a = format(coef(m)[1], digits = 2), 
+                          b = format(coef(m)[2], digits = 2), 
+                          r = format(r, digits = 2),
+                          p = format(p, digits=2)))
+    as.character(as.expression(eq));                 
+  }
+  
+  # Compute 
+  g <- ggplot(df, aes(a, b, color = b)) + 
+    geom_point(shape = 16, size = 5, show.legend = FALSE, alpha = .8 ) +  geom_smooth(method=lm,se=F,show.legend=F) + 
+    labs(x = features_name, y="IC50" ) + ggtitle(paste0(drug," (",target_name,")"," in ",tissue_name)) + 
+    theme(legend.position="bottom",axis.text=element_text(size= text_size) , axis.title= element_text(size=   text_size), plot.title = element_text(size =rel(title_size), hjust = 0.5 ),
+          panel.background = element_rect(fill='white'),panel.grid.major = element_line(colour = "grey90")) + 
+    geom_text(x = min(df$a) + 0.5*(max(df$a)-min(df$a)), y = min(df$b) + 0.25*(max(df$b)-min(df$b)) , label = lm_eqn(df), parse = TRUE,show.legend=F,color="black",size = 10) + 
+    scale_color_gradient(low = "#f0650e", high = "#0091ff" ) #  
+  g
+}
+
+library(cowplot)
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/GDSC_target_progeny_Scatter_Plot/"
+
+pdf(file=paste0(result_folder,"skin_progeny_SNP_CNV",".pdf"), width = 22, height = 11,  compress=TRUE, onefile = F)
+par(mfrow=c(2,1))
+figure1 <- scatter_plot_tissue( "skin" ,"SNP_CNV" , "BRAF_mut" , "BRAF" , 6 )
+figure2 <- scatter_plot_tissue_2_features( "skin" ,"progeny11",c("MAPK","VEGF"),"SNP_CNV" , "BRAF_mut" , "BRAF" , 6 )
+plot_grid(figure1, figure2, ncol = 2, nrow = 1 )
+dev.off()
+
+pdf(file=paste0(result_folder,"brain_progeny_SNP_CNV",".pdf"), width = 22, height = 22,  compress=TRUE, onefile = F)
+par(mfrow=c(2,2))
+figure1 <- scatter_plot_tissue( "brain", "SNP_CNV" , "TP53_mut" , "PLK1" , 1 )
+figure2 <- scatter_plot_tissue( "brain", "SNP_CNV" , "BRAF_mut" , "PLK1" , 1 )
+figure3 <- scatter_plot_tissue( "brain", "SNP_CNV" , "EGFR_mut" , "PLK1" , 1 )
+figure4 <- scatter_plot_tissue( "brain", "progeny11" , c("JAK.STAT", "EGFR") , "PLK1" , 1 )
+
+plot_grid(figure1, figure2,figure3,figure4, ncol = 2, nrow = 2 )
+dev.off()
+
+
+scatter_plot_tissue( "brain", "progeny11" , c("JAK.STAT", "EGFR") , "PLK1" , 1 )
+
+```
+
+
+
+
+
+
+
+
+
+
