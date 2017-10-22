@@ -1,0 +1,257 @@
+---
+title: "Drug response analysis"
+author: "MI YANG"
+date: "`r doc_date()`"
+vignette: >
+  %\VignetteIndexEntry{Bioconductor style for PDF documents}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::html_document
+---
+```{r include=FALSE, cache=FALSE}
+source("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/interaction_matrix_Functions.R")
+source("/Users/miyang/Documents/RWTH_Aachen/FUNCTIONS/PLOT.R")
+source("/Users/miyang/Documents/RWTH_Aachen/FUNCTIONS/general_functions.R")
+target <- read.csv("/Users/miyang/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA/target", check.names = F) ; drug_names <- target[ ,1] ; target <- target[ ,-1]
+DRUG_ANALYSIS_SET_update$Drug.Name <- DRUG_ANALYSIS_SET$DRUG_NAME
+
+target_to_remove <- c()
+for (i in 1:length(colnames(target))) {
+protein_target <- print_target_GDSC (protein_target= colnames(target)[i], target_matrix=target, drug_names=drug_names )
+if ( length(protein_target[,1]) == 1 ) { target_to_remove <- c(target_to_remove, i) }
+}
+target_to_remove <- c(target_to_remove , which(colnames(target) %in% c("others","not defined" ))  ) 
+
+tissue_label_gdsc <- read.csv("~/Documents/RWTH_Aachen/SANGER_DATA/tissue_label_gdsc_ID", row.names=1)
+table(tissue_label_gdsc$tissue) ; names(which(table(tissue_label_gdsc$tissue) > 20)) 
+tissue <- c("aero_dig_tract","bone","brain","breast","colon","kidney","leukemia","liver","lung_NSCLC","lung_SCLC","lymphoma","ovary","pancreas","skin","soft_tissue","stomach")
+#  print_target_GDSC ( protein_target= "ERBB2" , target_matrix=target, drug_names=drug_names )
+```
+
+# GDSC
+
+```{r include=FALSE, cache=FALSE}
+###### MACAU
+path <- "~/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA_RESULT_STORAGE/"
+
+### new cell lines
+new_cell_GEX <- read.csv(paste(path,"pcorr_newCell_by_drug_GEX_IC50_rep20_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ; new_cell_GEX<-new_cell_GEX$V2
+new_cell_GEX_EN <- read.csv("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/DATA_RESULT_STORAGE_IC50/EN_new_cell_GEX_GDSC_IC50_100ite", row.names=1) ; new_cell_GEX_EN <- new_cell_GEX_EN$pc
+
+new_cell_GEX_target <- read.csv(paste(path,"pcorr_newCell_by_drug_GEX_target_IC50_rep20_fold10_sample600_latent30.csv",sep=""),header=FALSE,row.names=1);new_cell_GEX_target<-new_cell_GEX_target$V2
+
+new_cell_progeny11 <- read.csv(paste(path,"pcorr_newCell_by_drug_progeny11_IC50_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1); new_cell_progeny11<-new_cell_progeny11$V2 
+new_cell_progeny11_EN <- read.csv("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/DATA_RESULT_STORAGE_IC50/EN_new_cell_progeny11_fold10_ite100"); new_cell_progeny11_EN <- new_cell_progeny11_EN$pcorr
+
+new_cell_SNP_CNV <- read.csv(paste(path,"pcorr_newCell_by_drug_SNP_CNV_IC50_rep20_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1);new_cell_SNP_CNV<-new_cell_SNP_CNV$V2
+new_cell_SNP_CNV_EN <- read.csv("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/DATA_RESULT_STORAGE_IC50/EN_new_cell_SNP_CNV_fold10_ite100"); new_cell_SNP_CNV_EN <- new_cell_SNP_CNV_EN$pcorr
+
+### new drugs
+new_drug_target <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_IC50_rep20_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1);new_drug_target<-new_drug_target$V2
+new_drug_target_EN <- read.csv("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/DATA_RESULT_STORAGE_IC50/EN_new_drug_target_fold10_ite10" ); new_drug_target_EN <- new_drug_target_EN$pc
+
+new_drug_ECFP4 <- read.csv(paste(path,"pcorr_newDrug_by_cell_ECFP4_IC50_ECFP4_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1); new_drug_ECFP4<-new_drug_ECFP4$V2
+new_drug_ECFP4_EN <- read.csv("/Users/miyang/Documents/RWTH_Aachen/SANGER_DATA/DATA_RESULT_STORAGE_IC50/EN_new_drug_ECFP4_fold10_ite10", row.names = 1 ); new_drug_ECFP4_EN <- new_drug_ECFP4_EN$pc
+
+# new_cell_progeny14 <- read.csv(paste(path,"pcorr_newCell_by_drug_progeny14_IC50_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) 
+# new_cell_TF_GSVA <- read.csv(paste(path,"pcorr_newCell_by_drug_NES_GDSC_GSVA_IC50_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1)
+# new_cell_TF_VIPER <- read.csv(paste(path,"pcorr_newCell_by_drug_NES_GDSC_VIPER_IC50_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1)
+# new_drug_target_GEX <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_GEX_IC50_rep10_fold10_sample600_latent30.csv",sep=""), header=FALSE, row.names=1) ;  
+# new_drug_target_predicted <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_Leiden_IC50_target_Leiden_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ; 
+# new_drug_target_predicted_GEX <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_Leiden_GEX_IC50_target_Leiden_rep10_fold10_sample600_latent30.csv",sep=""), header=FALSE, row.names=1) 
+# new_drug_target_predicted_GEX <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_Leiden_GEX_IC50_target_Leiden_rep10_fold10_sample600_latent30.csv",sep=""), header=FALSE, row.names=1) 
+
+```
+
+
+## Prediction of new cell lines
+
+```{r, echo=FALSE, fig.height = 6, fig.width=4}
+result_new_cell <- list(new_cell_GEX_EN, new_cell_GEX,new_cell_GEX_target, new_cell_progeny11_EN, new_cell_progeny11, new_cell_SNP_CNV_EN,new_cell_SNP_CNV)
+names(result_new_cell) <- c("GEX (Lasso)","GEX (Macau)","GEX+Target (Macau)","progeny11 (Ridge)" ,"progeny11 (Macau)","SNP_CNV (Ridge)","SNP_CNV (Macau)")
+
+nice_boxplot_list_new_cell <- function (result, title, text_size=20, title_size, Y_label="Pearson correlation" ) {
+  result_transformed <- c()
+  for (i in 1:length(result)) {
+    v <- na.omit(result[[i]]) ; v <- cbind(rep(i,each=length(na.omit(result[[i]]))), v)
+    result_transformed <- rbind(result_transformed, v)
+    colnames(result_transformed) <- c("features", "correlation")
+  }
+  result_transformed <- data.frame(result_transformed)
+  result_transformed$features <- factor(result_transformed$features,levels=1:length(names(result)), labels=names(result)) 
+  #  r <- qplot(data = result_transformed, x = features, y = correlation,  fill = features, geom = "boxplot", main=title, ylab = Y_label) + aes(group=features)
+  r <- ggplot(data = result_transformed, aes(y = correlation, x = features, color = features)) 
+  r <- r + geom_boxplot( width = 0.4 , colour="black" ) + geom_jitter(width = 0.1, alpha=0.3 ) + 
+    geom_point(stat = "summary", fun.y = "mean", size = I(3), color = I("black"))  + 
+   
+    geom_signif( comparisons = list(c("GEX (Lasso)","GEX+Target (Macau)" )),test = "wilcox.test",y_position=0.85,color="black") + 
+    geom_signif( comparisons = list(c("GEX (Lasso)","GEX (Macau)" )),test = "wilcox.test",y_position=0.75,color="black") + 
+    geom_signif( comparisons = list(c("progeny11 (Ridge)" ,"progeny11 (Macau)")),test = "wilcox.test",y_position=0.75,color="black") + 
+    geom_signif( comparisons = list(c("SNP_CNV (Ridge)","SNP_CNV (Macau)")),test = "wilcox.test",y_position=0.75,color="black") + 
+    
+    geom_point(stat = "summary", fun.y = "mean", size = I(2.2), color = I("orange") ) + 
+    ggtitle(title) + 
+    theme(legend.position="none",plot.title=element_text(size=text_size+8,hjust=0.5),
+          axis.text=element_text(colour="black",size=text_size, angle=30,hjust=1),
+          axis.title.x=element_text(colour="black",size=text_size),axis.title.y=element_text(colour="black",size=text_size),
+          panel.background = element_rect(fill='white'),panel.grid.major = element_line(colour = "grey90") )  + 
+    scale_y_continuous( breaks=c(-0.4,0,0.4, 0.8), limits=c(-0.4, 1)) 
+    grid.arrange(r, ncol = 1)
+}
+
+
+title <- paste("Predicting new cell lines")
+pdf("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/DRUG_RESPONSE_PREDICTION/GDSC_new_cell.pdf", width = 9 , height = 6, onefile = F )
+nice_boxplot_list_new_cell(result_new_cell, title, text_size=15 )
+dev.off()
+
+mean(result_new_cell$`GEX (Lasso)`)
+mean(result_new_cell$`GEX (Macau)`)
+mean(result_new_cell$`GEX+Target (Macau)`)
+
+```
+
+## Prediction of new drugs
+
+```{r, echo=FALSE, fig.height = 5, fig.width=3, warning=FALSE}
+result_new_drug <- list( new_drug_target_EN,new_drug_target,  new_drug_ECFP4_EN, new_drug_ECFP4 )
+names(result_new_drug) <- c("Target (Ridge)","Target (Macau)","ECFP4 (Ridge)","ECFP4 (Macau)")
+
+nice_boxplot_list_new_drug <- function (result, title, text_size=20, title_size, Y_label="Pearson correlation" ) {
+  result_transformed <- c()
+  for (i in 1:length(result)) {
+    v <- na.omit(result[[i]]) ; v <- cbind(rep(i,each=length(na.omit(result[[i]]))), v)
+    result_transformed <- rbind(result_transformed, v)
+    colnames(result_transformed) <- c("features", "correlation")
+  }
+  result_transformed <- data.frame(result_transformed)
+  result_transformed$features <- factor(result_transformed$features,levels=1:length(names(result)), labels=names(result)) 
+  r <- ggplot(data = result_transformed, aes(y = correlation, x = features, color = features)) 
+  r <- r + geom_boxplot( width = 0.4 , colour="black" ) + geom_jitter(width = 0.1, alpha=0.3 ) + 
+    geom_point(stat = "summary", fun.y = "mean", size = I(3), color = I("black"))  + 
+   
+    geom_signif( comparisons = list(c("Target (Ridge)","Target (Macau)")),test = "wilcox.test",color="black") + 
+    geom_signif( comparisons = list(c("ECFP4 (Ridge)","ECFP4 (Macau)")),test = "wilcox.test",color="black") + 
+    
+    geom_point(stat = "summary", fun.y = "mean", size = I(2.2), color = I("orange") ) + 
+    ggtitle(title) + 
+    theme(legend.position="none",plot.title=element_text(size=text_size+8,hjust=0.5),
+          axis.text=element_text(colour="black",size=text_size, angle=30,hjust=1),
+          axis.title.x=element_text(colour="black",size=text_size),axis.title.y=element_text(colour="black",size=text_size),
+          panel.background = element_rect(fill='white'),panel.grid.major = element_line(colour = "grey90") )  + 
+    scale_y_continuous( breaks=c(-0.4,0,0.4, 0.8), limits=c(-0.4, 1)) 
+    grid.arrange(r, ncol = 1)
+}
+
+
+title <- paste("Predicting new drugs")
+pdf("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/DRUG_RESPONSE_PREDICTION/GDSC_new_drug.pdf", width = 9 , height = 6, onefile = F )
+nice_boxplot_list_new_drug(result_new_drug, title, text_size=15 )
+dev.off()
+
+```
+
+## combined plot
+
+```{r, echo=FALSE, fig.height = 5, fig.width=3, warning=FALSE}
+library(cowplot)
+title <- paste("Predicting new cell lines")
+a <- nice_boxplot_list_new_cell(result_new_cell, title, text_size=16, title_size = 1)
+title <- paste("Predicting new drugs")
+b <- nice_boxplot_list_new_drug(result_new_drug, title, text_size=16, title_size = 1)
+
+pdf("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/DRUG_RESPONSE_PREDICTION/GDSC_combined.pdf", width = 10 , height = 14, onefile = F )
+plot_grid(a,b, ncol = 1, nrow = 2 , scale=0.9)
+dev.off()
+
+```
+
+
+## Scatter plot of drug response dependant on progeny score
+
+```{r, echo=FALSE}
+print_target_GDSC ( protein_target= "BRAF" , target_matrix=target, drug_names=drug_names )
+drug <- IC50["Dabrafenib)", ]
+pathway <- progeny14[ ,"MAPK"] ; names(pathway) <- rownames(progeny14)
+
+common_cell <- intersect(names(drug),names(pathway))
+drug <- drug[common_cell]
+pathway <- pathway[common_cell]
+plot(pathway, drug)
+cor.test(pathway, drug)
+
+```
+
+## Scatter plot of drug response dependant on gene expression
+
+```{r, echo=FALSE}
+load("~/Documents/RWTH_Aachen/SANGER_DATA/FEATURES/GEX_ALL.Rdata")
+x <- read.csv("~/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA_RESULT_STORAGE/transduction/interaction_target_GEX_IC50_fold_sample600_latent30.csv", row.names = 1)
+
+
+print_target_GDSC ( protein_target= "BRAF" , target_matrix=target, drug_names=drug_names )
+drug <- IC50["Dabrafenib", ]
+gene <- GEX_ALL[ , names(which.max( x[ "BRAF" , ] ) )] ; names(gene) <- rownames(GEX_ALL)
+
+common_cell <- intersect(names(drug),names(gene))
+drug <- drug[common_cell]
+gene <- gene[common_cell]
+plot(gene, drug)
+cor.test(gene, drug)
+
+```
+
+
+
+# CTRP
+
+```{r include=FALSE, cache=FALSE}
+
+###### MACAU
+path <- "~/Documents/RWTH_Aachen/macau_work_dir/macau_test_CTRP/DATA_RESULT_STORAGE/"
+
+new_cell <- read.csv(paste(path,"pcorr_newCell_by_drug_GEX_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ; boxplot(new_cell) ; length( which(new_cell > 0.4) ) 
+
+new_cell_target <- read.csv(paste(path,"pcorr_newCell_by_drug_GEX_target_AUC_rep10_fold10_sample600_latent30.csv",sep=""), header=FALSE, row.names=1) ; boxplot(new_cell_target) ; length( which(new_cell_target > 0.4) ) 
+
+new_drug <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug) ; length( which(new_drug > 0.4) ) 
+new_drug_FP2 <- read.csv(paste(path,"pcorr_newDrug_by_cell_FP2_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug_FP2) ; length( which(new_drug_FP2 > 0.4) ) 
+new_drug_FP4 <- read.csv(paste(path,"pcorr_newDrug_by_cell_FP4_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug_FP4) ; length( which(new_drug_FP4 > 0.4) ) 
+new_drug_morgan <- read.csv(paste(path,"pcorr_newDrug_by_cell_morgan_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug_morgan) ; length( which(new_drug_morgan > 0.4) ) 
+new_drug_MACCS <- read.csv(paste(path,"pcorr_newDrug_by_cell_MACCS_AUC_rep10_fold10_sample600_latent10.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug_MACCS) ; length( which(new_drug_MACCS > 0.4) ) 
+
+new_drug_GEX <- read.csv(paste(path,"pcorr_newDrug_by_cell_target_GEX_AUC_rep10_fold10_sample600_latent30.csv",sep=""), header=FALSE, row.names=1) ;  boxplot(new_drug_GEX)  ; length( which(new_drug_GEX > 0.4) ) 
+
+```
+
+## Prediction of new cell lines
+
+```{r, echo=FALSE, fig.height = 5, fig.width=4, warning=FALSE }
+result <- cbind(new_cell, new_cell_target)
+colnames(result) <- c("GEX", "GEX + target")
+title <- paste("Predicting new cell lines")
+nice_boxplot(result, title, text_size=12, title_size = 1.2)
+
+```
+
+## Prediction of new drugs
+
+```{r, echo=FALSE, fig.height = 5, fig.width=5, warning=FALSE }
+result <- cbind(new_drug, new_drug_FP2,new_drug_FP4, new_drug_morgan, new_drug_MACCS)
+colnames(result) <- c("target", "FP2","FP4", "Morgan", "MACCS")
+title <- paste("Predicting new drugs")
+nice_boxplot(result, title, text_size=17, title_size = 1.7)
+
+pdf("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/new_drug_comparison.pdf", width = 7 , height = 5, onefile = F )
+nice_boxplot(result, title, text_size=20, title_size = 2)
+dev.off()
+```
+
+
+# Session info
+Here is the output of `sessionInfo()` on the system on which this
+document was compiled:
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
