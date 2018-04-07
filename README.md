@@ -1,5 +1,10 @@
 # Linking drug target and pathway activation for effective therapy using multi-task learning
 
+## Introduction to Macau
+
+Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/examples.html#
+
+
 ## Drug response prediction in 4 different settings: 
 
 Setting 1: macau_GDSC.py
