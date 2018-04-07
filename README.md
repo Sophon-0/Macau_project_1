@@ -8,7 +8,8 @@ Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/e
 
 To understand more about MCMC Sampling: http://twiecki.github.io/blog/2015/11/10/mcmc-sampling/
 
-![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+![Macau factorization model: (a) The drug response (IC50) is computed by 2 latent matrices. Each of them is being sampled by a Gibbs sampler. In presence of additional information (side information), the latent matrix is predicted by a multiplication of a link matrix and the side information matrix. Arrows in this figure indicate the matrix multiplication. (b) By multiplying the 2 link matrices, we obtain the interaction matrix, which is the interaction between the features of the drugs with the features of the cell lines.
+](https://github.com/Katan5555/Macau_project_1/blob/master/image/Yang2018ScientificReportsFig1.pdf)
 
 ## Drug response prediction in 4 different settings: 
 
