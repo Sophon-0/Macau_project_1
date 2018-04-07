@@ -8,7 +8,7 @@ Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/e
 
 To understand more about MCMC Sampling: http://twiecki.github.io/blog/2015/11/10/mcmc-sampling/
 
-![Alt text](https://github.com/Katan5555/Macau_project_1/blob/master/image/Keynote_Figure_1.001.png)
+![Alt text](https://github.com/Katan5555/Macau_project_1/blob/master/image/Figure_1.png)
 
 ## Drug response prediction in 4 different settings: 
 
