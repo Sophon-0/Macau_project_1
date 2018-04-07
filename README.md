@@ -3,6 +3,7 @@
 ## Introduction to Macau
 
 Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/examples.html#
+
 To understand more about MCMC Sampling: http://twiecki.github.io/blog/2015/11/10/mcmc-sampling/
 
 ## Drug response prediction in 4 different settings: 
