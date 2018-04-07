@@ -29,7 +29,7 @@ Step 1: use macau_GDSC_pred_new_drug_new_cell.py (for one tissue) or macau_GDSC_
 
 Step 2: Generate the interaction matrix using macau_GDSC_transduction.py
 
-Step 3: use macau_GDSC_interaction_tissue_PERMUTATION.py to do random permutation of the cell lines side features. This gives p-value for each dara point of the interaction matrix
+Step 3: use macau_GDSC_interaction_tissue_PERMUTATION.py to do random permutation of the cell lines side features. This gives p-value for each data point of the interaction matrix.
 
 ## Plot the results:
 
