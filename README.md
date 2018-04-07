@@ -8,6 +8,8 @@ Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/e
 
 To understand more about MCMC Sampling: http://twiecki.github.io/blog/2015/11/10/mcmc-sampling/
 
+![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+
 ## Drug response prediction in 4 different settings: 
 
 Setting 1: macau_GDSC.py
