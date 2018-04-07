@@ -25,7 +25,9 @@ You may need a certain environment to submit your job (depending on the cluster)
 
 ## Generate the interaction matrix: 
 
-Step 1: use macau_GDSC_pred_new_drug_new_cell.py (for one tissue) or macau_GDSC_interaction_tissue_QC.py (for all tissues) to check the quality of the features. make sure the performance is greater than 0.3
+Step 1: use macau_GDSC_pred_new_drug_new_cell.py (for one tissue) or macau_GDSC_interaction_tissue_QC.py (for all tissues) to check the quality of the features. 
+
+Make sure the performance is greater than 0.3, otherwise don't go further because your input data is simply not predictive of the response.
 
 Step 2: Generate the interaction matrix using macau_GDSC_transduction.py
 
