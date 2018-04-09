@@ -36,7 +36,15 @@ tissue <- c("aero_dig_tract","bone","brain","breast","colon","kidney","leukemia"
 # Target - Progeny interaction (conservative/all_target , Single/Absolute)
 
 ```{r echo=FALSE, cache=FALSE}
-save_interaction_plot("target","progeny11",selection="conservative",cut_off="single")
+significance_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single")
+save_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",significance=0.20)
+
+significance_interaction_plot(drug_feature_name="target_Leiden",cell_feature_name="progeny11",selection="conservative",cut_off="single")
+save_interaction_plot(drug_feature_name="target_Leiden",cell_feature_name="progeny11",selection="conservative",cut_off="single",significance=0.05)
+
+significance_interaction_plot(drug_feature_name="target",cell_feature_name="SNP_CNV",selection="conservative",cut_off="single")
+save_interaction_plot(drug_feature_name="target",cell_feature_name="SNP_CNV",selection="conservative",cut_off="single",significance=0.20)
+
 
 ## PAN CANCER
 x <- read.csv("~/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA_RESULT_STORAGE/transduction/interaction_target_progeny11_IC50_fold_sample600_latent30.csv", row.names = 1)
@@ -67,71 +75,7 @@ dev.off()
 # Target - Progeny interaction (conservative/all_target , Single/Absolute)
 
 ```{r echo=FALSE, cache=FALSE}
-save_interaction_plot("target","progeny14",selection="conservative",cut_off="single")
-
-```
-
-
-# Target - SLC ABC interaction (conservative/all_target , Single/Absolute)
-
-```{r echo=FALSE, cache=FALSE}
-save_interaction_plot_quantile(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="conservative",cut_off="single")
-save_interaction_plot(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="conservative",cut_off="single")
-save_interaction_plot_quantile(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="all_target",cut_off="single")
-save_interaction_plot(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="all_target",cut_off="single")
-save_interaction_plot_quantile(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="all_target",cut_off="absolute")
-save_interaction_plot(folder="SLC_TRANSPORTER","target","GEX_SLC_ABC",selection="all_target",cut_off="absolute")
-
-## Retrieve Ranks and Weights across tissues
-cell_rank <- retrieve_RANK_cell( folder="SLC_TRANSPORTER","CFTR",drug_feature_name="target",cell_feature_name="GEX_SLC_ABC")
-drug_rank <- retrieve_RANK_drug( folder="SLC_TRANSPORTER","BIRC5",drug_feature_name="target",cell_feature_name="GEX_SLC_ABC")
-
-interaction_rank <- retrieve_RANK_interaction(folder="SLC_TRANSPORTER",c("BIRC5","SLC35F2"),drug_feature_name="target",cell_feature_name="GEX_SLC_ABC")
-
-## PAN CANCER
-x <- read.csv("~/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/DATA_RESULT_STORAGE/transduction/interaction_target_GEX_SLC_ABC_IC50_fold_sample600_latent30.csv", row.names = 1)
-rownames(x)[grep("G9a and GLP methyltransferases",rownames(x))] <- "G9a and GLP"
-rownames(x)[grep("dsDNA break induction",rownames(x))] <- "dsDNA break"
-rownames(x)[grep("FNTA",rownames(x))] <- "FNTA"
-mat <- x
-# v <- apply(mat,2,sum) ; v <- v[ order(-abs(v)) ] ; mat <- mat[ , names(v)[1:30] ]
-# v <- apply(mat,1,sum) ; v <- v[ order(-abs(v)) ] ; mat <- mat[ names(v)[1:30] , ]
-v <- apply(mat,1,var) ;  v <- v[ order(-abs(v)) ] ; mat <- mat[ names(v)[1:30] , ]
-v <- apply(mat,2,var) ;  v <- v[ order(-abs(v)) ] ; mat <- mat[ , names(v)[1:30] ]
-
-mat <- quantile_normalisation(mat) ; mat["BIRC5","SLC35F2"]
-plot_pheatmap(mat, row_names="Drug target", col_names="GEX" , title="Pan cancer Target - GEX" )
-
-pdf(paste("/Users/miyang/Documents/RWTH_Aachen/SLC_TRANSPORTER/PLOTS/Target_SLC_ABC_interaction_PANCANCER.pdf", sep = ""), width = 30 , height = 20, onefile = F )
-plot_pheatmap(mat, row_names="Drug target", col_names="GEX" , title="Pan cancer Target - GEX" )
-dev.off()
-
-```
-
-# Tissue specific interaction of target-progeny
-
-```{r echo=FALSE, cache=FALSE}
-
-mat_list <- retrieve_interaction_plot("target","GEX_SLC_ABC",selection="conservative",cut_off="single") ;  
-mat_tissue <- c()
-for(i in 1:length(mat_list)) {
-x <- mat_list[[i]]
-y <- stack(x) ; ind2 <- rep( rownames(x) , 417) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
-mat_tissue <- cbind(mat_tissue, y$values)
-}
-rownames(mat_tissue) <- rownames(y) ; colnames(mat_tissue) <- tissue
-
-mat <- mat_tissue
-mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(-abs(v)) ] ; mat <- mat[ names(v)[1:30] , ]
-pdf(paste("/Users/miyang/Documents/RWTH_Aachen/SLC_TRANSPORTER/PLOTS/interaction_TISSUE_target_GEX_SLC_ABC_Divergence.pdf", sep = ""), width = 14.5 , height = 16, onefile = F )
-plot_pheatmap(mat, row_names="SLC_ABC-Target pairs", col_names="Tissue" , title="Divergent interactions" ) 
-dev.off()
-
-mat <- mat_tissue
-mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(abs(v)) ] ; mat <- mat[ names(v)[1:30] , ]
-pdf(paste("/Users/miyang/Documents/RWTH_Aachen/SLC_TRANSPORTER/PLOTS/interaction_TISSUE_target_GEX_SLC_ABC_Convergence.pdf", sep = ""), width = 14.5 , height = 16, onefile = F )
-plot_pheatmap(mat, row_names="SLC_ABC-Target pairs", col_names="Tissue" , title="Convergent interactions" ) 
-dev.off()
+save_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",significance=0.20 )
 
 ```
 
@@ -139,7 +83,8 @@ dev.off()
 # Target - Progeny interaction: Tissue Gaps analysis
 
 ```{r echo=FALSE, cache=FALSE}
-mat_list <- retrieve_interaction_plot("target","progeny11",selection="conservative",cut_off="single") ;  
+
+mat_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[1]]
 x <- mat_list[[1]]
 
 coord_value_table <- c()
@@ -188,33 +133,161 @@ subset <- subset[ subset[ ,8] < 0.2 , ]
 ```
 
 
-# Tissue specific interaction of target-progeny: CONVERGENT/DIVERGENT interactions
+# Cross tissue interaction of target-progeny: CONVERGENT/DIVERGENT interactions
 
 ```{r echo=FALSE, cache=FALSE}
 
-mat_list <- retrieve_interaction_plot("target","progeny11",selection="conservative",cut_off="single") ;  
+mat_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[1]]
+pvalue_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[2]]
+
+pvalue_tissue <- c()
+for(i in 1:length(pvalue_list)) {
+x <- pvalue_list[[i]]
+y <- stack(x) ; ind2 <- rep( rownames(x) , length(colnames(x)) ) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
+pvalue_tissue <- cbind(pvalue_tissue, y$values)
+}
+rownames(pvalue_tissue) <- rownames(y) ; colnames(pvalue_tissue) <- tissue
+
 mat_tissue <- c()
 for(i in 1:length(mat_list)) {
 x <- mat_list[[i]]
-y <- stack(x) ; ind2 <- rep( rownames(x) , 11) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
+y <- stack(x) ; ind2 <- rep( rownames(x) , length(colnames(x)) ) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
 mat_tissue <- cbind(mat_tissue, y$values)
+}
+rownames(mat_tissue) <- rownames(pvalue_tissue) ; colnames(mat_tissue) <- tissue
+
+mat_tissue <- scale(mat_tissue) ## scale by tissue !!!
+
+
+library(pheatmap)
+library(RColorBrewer)
+# Sets the minimum (0), the maximum (15), and the increasing steps (+1) for the color scale
+# Note: if some of your genes are outside of this range, they will appear white on the heatmap
+breaksList = seq(-7, 7.5, by = 0.5)
+
+library(pheatmap) ; library(grid)
+plot_pheatmap <- function(mat, row_names, col_names , title ,cluster_rows=T,cluster_cols=T,fontsize=25,fontsize_row=25, fontsize_col=25, scale="none") {
+  setHook("grid.newpage", function() pushViewport(viewport(x=1,y=1,width=0.9, height=0.95, name="vp", just=c("right","top"))), action="prepend")
+  pheatmap(mat,color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)), breaks = breaksList, main=title, fontsize=fontsize, fontsize_row=fontsize_row,fontsize_col=fontsize_col,cluster_rows = cluster_rows, cluster_cols = cluster_cols,scale=scale,display_numbers = matrix(ifelse(pvalue < 0.20, "*", ""), nrow(pvalue)))
+  setHook("grid.newpage", NULL, "replace")
+  grid.text(row_names, x=-0.03, rot=90, gp=gpar(fontsize=30))
+  grid.text(col_names, y=0.01, gp=gpar(fontsize=30)  )
+}
+
+mat <- mat_tissue ; mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,mean) ;  v <- v[ order(-v) ] ; mat <- mat[ names(v)[1:30] , ]
+pvalue <- pvalue_tissue[rownames(mat), ]
+rownames(mat)[rownames(mat)=="Hypoxia_G9a and GLP methyltransferases"] <- "Hypoxia_G9a/GLP"
+
+pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_progeny11_Sensitive.pdf", sep = ""), width = 15 , height = 16, onefile = F )
+plot_pheatmap(mat, row_names="Pathway-Target pairs", col_names="Tissue" , title="Highest interactions" ) 
+dev.off()
+
+mat <- mat_tissue ; mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(-v) ] ; mat <- mat[ names(v)[1:30] , ]
+pvalue <- pvalue_tissue[rownames(mat), ]
+rownames(mat)[rownames(mat)=="Hypoxia_G9a and GLP methyltransferases"] <- "Hypoxia_G9a/GLP"
+
+pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_progeny11_Divergence.pdf", sep = ""), width = 15 , height = 16, onefile = F )
+plot_pheatmap(mat, row_names="Pathway-Target pairs", col_names="Tissue" , title="Divergent interactions" ) 
+dev.off()
+ 
+
+```
+
+
+# Cross tissue interaction of target-SNP/CNV: CONVERGENT/DIVERGENT interactions
+
+```{r echo=FALSE, cache=FALSE}
+
+mat_list <- retrieve_interaction_plot("target","SNP_CNV",selection="conservative",cut_off="single",tissue_name =  tissue) [[1]]
+pvalue_list <- retrieve_interaction_plot("target","SNP_CNV",selection="conservative",cut_off="single",tissue_name =  tissue) [[2]]
+
+all_gene <-  c() ; for(i in 1:length(mat_list)) { all_gene <- c(all_gene, colnames(mat_list[[i]])) } ;  all_gene <- unique(all_gene) ; all_gene <- all_gene[order(all_gene)]
+
+mat_tissue <- c()
+for(i in 1:length(mat_list)) {
+  x <- mat_list[[i]]
+  not_present <- setdiff(all_gene, colnames(x))
+  not_present_mat <- matrix(ncol = length(not_present) , nrow = length(rownames(x)) ) ; colnames(not_present_mat) <- not_present ; rownames(not_present_mat) <- rownames(x)
+  x <- cbind(x , not_present_mat) ; x <- x[ ,order(colnames(x))]
+  
+  y <- stack(x) ; ind2 <- rep( rownames(x) , length(colnames(x))) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
+  mat_tissue <- cbind(mat_tissue, y$values)
 }
 rownames(mat_tissue) <- rownames(y) ; colnames(mat_tissue) <- tissue
 
 mat_tissue <- scale(mat_tissue) ## scale by tissue !!!
+min(mat_tissue, na.rm=T) ; max(mat_tissue, na.rm=T) ; mean(mat_tissue, na.rm=T)
 
-mat <- mat_tissue
-mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(v) ] ; mat <- mat[ names(v)[1:30] , ]
-pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_progeny11_Convergence.pdf", sep = ""), width = 15 , height = 16, onefile = F )
-plot_pheatmap(mat, row_names="Pathway-Target pairs", col_names="Tissue" , title="Convergent interactions" ) 
+library(pheatmap)
+library(RColorBrewer)
+# Sets the minimum (0), the maximum (15), and the increasing steps (+1) for the color scale
+# Note: if some of your genes are outside of this range, they will appear white on the heatmap
+breaksList = seq(-40, 40, by = 1)
+
+library(pheatmap) ; library(grid)
+plot_pheatmap <- function(mat, row_names, col_names , title ,cluster_rows=T,cluster_cols=T,fontsize=25,fontsize_row=25, fontsize_col=25, scale="none") {
+  setHook("grid.newpage", function() pushViewport(viewport(x=1,y=1,width=0.9, height=0.95, name="vp", just=c("right","top"))), action="prepend")
+  pheatmap(mat,color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)), breaks = breaksList, main=title, fontsize=fontsize, fontsize_row=fontsize_row,fontsize_col=fontsize_col,cluster_rows = cluster_rows, cluster_cols = cluster_cols,scale=scale,display_numbers=matrix(ifelse(pvalue < 0.20, "*", ""), nrow(pvalue)))
+  setHook("grid.newpage", NULL, "replace")
+  grid.text(row_names, x=-0.03, rot=90, gp=gpar(fontsize=30))
+  grid.text(col_names, y=0.01, gp=gpar(fontsize=30)  )
+}
+
+
+mat <- mat_tissue ; mat[is.na(mat)] <- -41 ;  v <- apply(mat,1,mean) ;  v <- v[ order(-v) ] ; mat <- mat[ names(v)[1:30] , ]
+rownames(mat)[rownames(mat)=="Hypoxia_G9a and GLP methyltransferases"] <- "Hypoxia_G9a/GLP"
+pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_SNP_CNV_Sensitive.pdf", sep = ""), width = 22 , height = 16, onefile = F )
+plot_pheatmap(mat, row_names="SNP/CNV-Target pairs", col_names="Tissue" , title="Highest interactions" ) 
 dev.off()
 
-mat <- mat_tissue
-mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(-v) ] ; mat <- mat[ names(v)[1:30] , ]
-pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_progeny11_Divergence.pdf", sep = ""), width = 15 , height = 16, onefile = F )
-plot_pheatmap(mat, row_names="Pathway-Target pairs", col_names="Tissue" , title="Divergent interactions" ) 
+
+mat <- mat_tissue ; mat[is.na(mat)] <- -13 
+mat <- subset_row_up(mat, up_limit = 0.99, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(-v) ] ; mat_up <- mat[ names(v)[1:15] , ] ; mat_up[mat_up==-13] <- 41
+mat <- mat_tissue ; mat[is.na(mat)] <- 41
+mat <- subset_row_down(mat, down_limit = 0.01, obs=1) ;  v <- apply(mat,1,var) ;  v <- v[ order(-v) ] ; mat_down <- mat[ names(v)[1:15] , ]
+mat <- rbind(mat_up,mat_down)
+
+
+all_gene <-  c() ; for(i in 1:length(pvalue_list)) { all_gene <- c(all_gene, colnames(pvalue_list[[i]])) } ;  all_gene <- unique(all_gene) ; all_gene <- all_gene[order(all_gene)]
+pvalue_tissue <- c()
+for(i in 1:length(pvalue_list)) {
+  x <- pvalue_list[[i]]
+  not_present <- setdiff(all_gene, colnames(x))
+  not_present_mat <- matrix(ncol = length(not_present) , nrow = length(rownames(x)) ) ; colnames(not_present_mat) <- not_present ; rownames(not_present_mat) <- rownames(x)
+  x <- cbind(x , not_present_mat) ; x <- x[ ,order(colnames(x))]
+  
+  y <- stack(x) ; ind2 <- rep( rownames(x) , length(colnames(x))) ; y <- cbind(y, ind2) ; rownames(y) <- paste0(y$ind,"_",y$ind2)  
+  pvalue_tissue <- cbind(pvalue_tissue, y$values)
+}
+rownames(pvalue_tissue) <- rownames(y) ; colnames(pvalue_tissue) <- tissue
+
+pvalue <- pvalue_tissue[rownames(mat), ] ; pvalue[is.na(pvalue)] <- 1 
+
+pdf(paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/PLOTS/interaction_TISSUE_target_SNP_CNV_Divergence.pdf", sep = ""), width = 20 , height = 16, onefile = F )
+plot_pheatmap(mat, row_names="SNP/CNV-Target pairs", col_names="Tissue" , title="Divergent interactions" ) 
 dev.off()
 
+```
+
+
+# Cross tissue interaction of target-progeny: SIGN CONSISTENCY 
+
+```{r echo=FALSE, cache=FALSE}
+
+# mat <- mat_tissue ; mat <- subset_row_abs(mat, abs_limit = 0.95, obs=1)
+
+mat_tissue_sign <- mat_tissue
+mat_tissue_sign[mat_tissue_sign > 0] <- 1
+mat_tissue_sign[mat_tissue_sign < 0] <- -1
+sign <- c()
+for(i in 1:length(mat_tissue_sign[ ,1])) {
+  sign_plus <- length(which(mat_tissue_sign[i, ]==1))
+  sign_minus <- length(colnames(mat_tissue_sign)) - sign_plus
+  sign <- rbind(sign, c(sign_plus,sign_minus))
+}
+mat_tissue_sign <- cbind(sign,mat_tissue_sign) ; 
+
+hist(mat_tissue_sign[ ,1])
 
 ```
 
@@ -276,7 +349,7 @@ save_interaction_plot("target","GSVA_Reactome",selection="conservative",cut_off=
 
 ```
 
-# Quality Control
+# Quality Control for GDSC
 
 ```{r echo=FALSE, cache=FALSE}
 SEED_chosen  <- "SEED_RANDOM"
@@ -301,6 +374,80 @@ write.csv(result_table, paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT
 
 # describe this table, according to sample size, some tissues need further investigations. 
 ```
+
+# Quality Control for CTRP2
+
+```{r echo=FALSE, cache=FALSE}
+list_of_name <- c("target_GEX","target_progeny11")
+
+result_table <- c()
+for(feature in 1:length(list_of_name)) {
+path <- paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_CCLE/",list_of_name[feature],"_QC/" ,sep = "" ) 
+setwd(path) ; f <- list.files(path)  
+mean <- c()
+sd <- c()
+for(i in 1:length(f)) {
+  x <- list.files( paste(path, f[i],sep="") ) 
+  x <- strsplit(x, "=") ; 
+  mean <- c(mean, x[[1]][2] ) # take the mean pearson correlation
+  sd <- c(sd, x[[length(x)]][2] ) # take the sd pearson correlation
+}
+result_table <- cbind( result_table, paste0(as.character(mean)," (sd=",as.character(sd),")" ) )  
+}
+rownames(result_table) <- f ; colnames(result_table) <- list_of_name
+write.csv(result_table, paste("/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/summary_QC/",SEED_chosen,"_TABLE", sep = "")  )
+
+# describe this table, according to sample size, some tissues need further investigations. 
+```
+
+
+# COMPARING GDSC and CTRP2
+```{r echo=FALSE, cache=FALSE}
+
+tissue_to_compare <- "skin"
+
+GDSC <- read.csv(paste0("~/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/target_progeny11/interaction_",tissue_to_compare,"_target_progeny11_sample600_latent30.csv"), row.names=1)
+GDSC <- GDSC[-target_to_remove, ]
+GDSC_pvalue_CORRECTED <- read.csv(paste0("~/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/target_progeny11_PERMUTATION/",tissue_to_compare,"/interaction_pvalue_CORRECTED"), row.names=1)
+
+
+CTRP <- read.csv(paste0("~/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_CTRP/target_progeny11/interaction_",tissue_to_compare,"_target_progeny11_sample600_latent30.csv"), row.names=1)
+
+target_CTRP <- read.csv("~/Documents/RWTH_Aachen/CTD2/target",row.names = 1,check.names = F)
+target_to_remove_CTRP <- c()
+for (i in 1:length(colnames(target_CTRP))) {
+protein_target <- print_target_CTRP (protein_target= colnames(target_CTRP)[i], target_matrix=target_CTRP, drug_names=rownames(target_CTRP) )
+if ( length(protein_target[,1]) == 1 ) { target_to_remove_CTRP <- c(target_to_remove_CTRP, i) }
+}
+CTRP <- CTRP[-target_to_remove_CTRP, ]
+
+# significance_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single", database = "CTRP",target_to_remove=target_to_remove_CTRP)
+CTRP_pvalue_CORRECTED <- read.csv(paste0("~/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_CTRP/target_progeny11_PERMUTATION/",tissue_to_compare,"/interaction_pvalue_CORRECTED"), row.names=1)
+
+common <- intersect(rownames(GDSC),rownames(CTRP))
+
+GDSC <- GDSC[common, ]
+CTRP <- CTRP[common, ]
+
+x <- corr_by_row(t(GDSC), t(CTRP))
+cor.test(as.numeric(data.matrix(GDSC)),as.numeric(data.matrix(CTRP)))
+
+
+########################### compare the significant ones ###########################
+GDSC_pvalue_CORRECTED <- GDSC_pvalue_CORRECTED[common, ]
+CTRP_pvalue_CORRECTED <- CTRP_pvalue_CORRECTED[common, ]
+
+common <- intersect(names(which(rowSums(GDSC_pvalue_CORRECTED==1) < 6) ), names(which(rowSums(CTRP_pvalue_CORRECTED==1) < 6) ))
+GDSC <- GDSC[common, ]
+CTRP <- CTRP[common, ]
+
+x <- corr_by_row(t(GDSC), t(CTRP))
+cor.test(as.numeric(data.matrix(GDSC)),as.numeric(data.matrix(CTRP)) )
+
+
+```
+
+
 
 # Significance test
 
@@ -343,92 +490,65 @@ anova_result <- cbind(f,anova_result) ; anova_result
 
 ```
 
-# Drug - target profile
+
+# Pubmed mining of associations
 
 ```{r echo=FALSE, cache=FALSE}
-drug <- "BX-795"
-nice_boxplot_list_indication(drug, indication = c(""))
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/Pubmed/TISSUE_SPECIFIC_GDSC/"
 
-x <- target[ which(DRUG_ANALYSIS_SET_update$Drug.Name == drug ) , ]
-relevant_target <- colnames(x)[which(x[1,]==1)] 
-if(length(which(relevant_target %in% c("others","not defined"))) > 0) {relevant_target <- relevant_target[-which(relevant_target %in% c("others","not defined"))]}
+tissue <- c("aero_dig_tract","bone","brain","breast","colon","kidney","leukemia","liver","lung_NSCLC","lung_SCLC","lymphoma","ovary","pancreas","skin","soft_tissue","stomach")
+tissue_Pubmed <- c("aerodigestive tract","bone","brain","breast","colon","kidney","leukemia","liver","NSCLC","SCLC","lymphoma","ovary","pancreas","skin","soft tissue","stomach")
 
-drug_mean <- IC50_tissue_mean[drug, ] ; drug_mean <- drug_mean[order(-drug_mean)] ; ordered_tissue <- names(drug_mean)
+mat_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[1]]
 
-############################## create progeny matrix ##############################
-path <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/target_progeny11/" ; setwd(path) ; f <- list.files(path)
-tissue <- regmatches(f, regexpr('interaction.+?target', f)) ; tissue <- gsub('.{7}$', '', tissue) ; tissue <- substring(tissue, 13)
-liver <- which(tissue=="liver")
-tissue <- tissue[-liver] ; f <- f[-liver]
-tab <- cbind(f,tissue) ; tab <- tab[ order(match(tab[,2],ordered_tissue)) , ] ; f <- tab[,1]
-
-mat_progeny <- c()
-for(i in 1:length(f)) {
-one_tissue <- read.csv(f[i], row.names=1)  ; one_tissue <- one_tissue[ relevant_target , ]
-rownames(one_tissue) <- paste(rownames(one_tissue)," (",ordered_tissue[i],")", sep = "")
-mat_progeny <- rbind(mat_progeny,one_tissue)
-}
-mat_progeny <- scale(mat_progeny)
-plot_pheatmap(mat_progeny,"Drug target" , "Progeny Pathway activity" , paste(drug,sep = ""), cl = FALSE  ) 
-
-############################## create TF score matrix ##############################
-path <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/target_TF_score/" ; setwd(path) ; f <- list.files(path)
-tissue <- regmatches(f, regexpr('interaction.+?target', f)) ; tissue <- gsub('.{7}$', '', tissue) ; tissue <- substring(tissue, 13)
-liver <- which(tissue=="liver")
-tissue <- tissue[-liver] ; f <- f[-liver]
-tab <- cbind(f,tissue) ; tab <- tab[ order(match(tab[,2],ordered_tissue)) , ] ; f <- tab[,1]
-
-TF_name <- c()
-for(i in 1:length(f)) {
-one_tissue <- read.csv(f[i], row.names=1)  ; one_tissue <- one_tissue[ relevant_target , ]
-rownames(one_tissue) <- paste(rownames(one_tissue)," (",ordered_tissue[i],")", sep = "")
-s <- colSums(abs(one_tissue)) ; s <- s[ order(-abs(s))] ; name <- names(s)[1:2] 
-TF_name <- c(TF_name, name)
+for(i in 1:16) {
+  x <- mat_list[[i]]
+  result <- find_pubmed_association(rownames(x), colnames(x), tissue_Pubmed[i])
+  write.csv(result, paste0(result_folder,tissue[i]))
 }
 
-TF_name <- unique(TF_name)
+## ANALYSIS RESULT
+mat_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[1]]
+pvalue_list <- retrieve_interaction_plot(drug_feature_name="target",cell_feature_name="progeny11",selection="conservative",cut_off="single",tissue_name =  tissue) [[2]]
 
-mat_TF <- c()
-for(i in 1:length(f)) {
-one_tissue <- read.csv(f[i], row.names=1)  ; one_tissue <- one_tissue[ relevant_target , ]
-rownames(one_tissue) <- paste(rownames(one_tissue)," (",ordered_tissue[i],")", sep = "")
-mat_TF <- rbind(mat_TF,one_tissue[ ,TF_name])
+setwd(result_folder) ; f <- list.files(result_folder)
+result_table <- c()
+for(i in 1:length(f)) {  ##  i  =  4
+  pubmed <- read.csv(f[i], row.names = 1) ; pubmed <- as.numeric(data.matrix(pubmed))
+  mat <- mat_list[[i]] ; mat <- as.numeric(data.matrix(mat))
+  pvalue <- pvalue_list[[i]] ; pvalue <- as.numeric(data.matrix(pvalue))
+  result <- cbind(mat,pvalue,pubmed)
+  result <- result[-1, ]  # remove EGFR/EGFR becasue same name protein and pathway
+  result <- result[which(result[ ,2]<1), ] ## remove p value of 1
+  result[ ,1] <- abs(result[ ,1])
+  result <- result[ which(result[ ,3] > 0), ] ## remove Pubmed count null
+#  result[ ,3] <- log10(result[ ,3])
+  
+  corr <- cor.test(result[, 1],result[ ,3]) ; 
+  t<- c(corr$estimate,corr$p.value)
+  result_table <- rbind(result_table, t)
+#  scatter_plot(result[ ,c(1,3)], title=tissue[i], "Absolute interaction weight", "Pubmed count")
 }
-mat_TF <- scale(mat_TF)
-plot_pheatmap(mat_TF,"Drug target" , "TF activity" , paste(drug,sep = ""), cl = FALSE  ) 
+rownames(result_table) <- tissue
+colnames(result_table) <- c("correlation","p-value")
+adj_p_value <- p.adjust( result_table[ ,2] , method = "fdr" ) 
+result_table <- cbind(result_table, adj_p_value)
+result_table <- signif(result_table, 3)
 
-############################## create  SNP_CNV  matrix ##############################
-path <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/target_SNP_CNV/" ; setwd(path) ; f <- list.files(path)
-tissue <- regmatches(f, regexpr('interaction.+?target', f)) ; tissue <- gsub('.{7}$', '', tissue) ; tissue <- substring(tissue, 13)
-liver <- which(tissue=="liver")
-tissue <- tissue[-liver] ; f <- f[-liver]
-tab <- cbind(f,tissue) ; tab <- tab[ order(match(tab[,2],ordered_tissue)) , ] ; f <- tab[,1]
-
-SNP_CNV_name <- c()
-common_tissue_name <- list()
-for(i in 1:length(f)) {
-one_tissue <- read.csv(f[i], row.names=1)  ; one_tissue <- one_tissue[ relevant_target , ]
-rownames(one_tissue) <- paste(rownames(one_tissue)," (",ordered_tissue[i],")", sep = "")
-s <- colSums(abs(one_tissue)) ; s <- s[ order(-abs(s))] ; name <- names(s)[1:2] 
-SNP_CNV_name <- c(SNP_CNV_name, name)
-common_tissue_name[[i]] <- colnames(one_tissue)
-}
-common <- Reduce(intersect, common_tissue_name)
-SNP_CNV_name <- unique(SNP_CNV_name) ; SNP_CNV_name <- SNP_CNV_name[which(SNP_CNV_name %in% common)]
-
-mat_SNP_CNV <- c()
-for(i in 1:length(f)) {
-one_tissue <- read.csv(f[i], row.names=1)  ; one_tissue <- one_tissue[ relevant_target , ]
-rownames(one_tissue) <- paste(rownames(one_tissue)," (",ordered_tissue[i],")", sep = "")
-mat_SNP_CNV <- rbind(mat_SNP_CNV,one_tissue[ ,SNP_CNV_name])
-}
-mat_SNP_CNV <- scale(mat_SNP_CNV)
-plot_pheatmap(mat_SNP_CNV,"Drug target" , "SNP CNV" , paste(drug,sep = ""), cl = FALSE  ) 
-
-#################################### combine plot #####################################
-mat <- cbind(mat_progeny, mat_TF)
-plot_pheatmap(mat,"Drug target" , "Progeny - TF" , paste(drug,sep = ""), cl = FALSE  ) 
+result_folder <- "/Users/miyang/Documents/RWTH_Aachen/MACAU_PROJECT/DATA_RESULT_STORAGE/Pubmed/"
+write.csv(result_table, paste0(result_folder,"Pubmed_target_pathway_tissue_specific"))
 
 ```
+
+
+
+
+
+
+
+
+
+
+
 
 
