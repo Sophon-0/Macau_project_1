@@ -2,11 +2,15 @@
 
 ## Introduction to Macau
 
-Macau pharmacogenomics paper: https://www.biorxiv.org/content/early/2018/01/27/225573
-
-Macau technical paper: http://ieeexplore.ieee.org/document/8168143/
+Macau installation: https://github.com/jaak-s/macau
 
 Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/examples.html#
+
+Macau pharmacogenomics paper: https://www.biorxiv.org/content/early/2018/01/27/225573
+
+Macau technical overview paper: http://ieeexplore.ieee.org/document/8168143/
+
+Macau technical paper (extended):  https://arxiv.org/pdf/1509.04610.pdf
 
 To understand more about MCMC Sampling: http://twiecki.github.io/blog/2015/11/10/mcmc-sampling/
 
