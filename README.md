@@ -32,10 +32,6 @@ Setting 4: **macau_GDSC_pred_new_drug_new_cell.py**
 
 You may need a certain environment to submit your job (depending on the cluster): **cluster_script_GDSC.sh**
 
-## Divide the data into 16 different tissues 
-
-Use **prepare_data_cancer_type.R** to divide the data contained in the DATA folder into 16 subfolders for each tissue type. 
-
 
 ## Generate the interaction matrix: 
 
