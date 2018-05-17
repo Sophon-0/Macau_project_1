@@ -17,7 +17,7 @@ path = "/Users/miyang/Documents/RWTH_Aachen/macau_work_dir/macau_test_sanger/"
 
 ## loading data
 name_of_response = 'IC50'
-name_of_cell_feature = 'GEX'
+name_of_cell_feature = 'progeny11'
 name_of_drug_feature = 'target'
 RES = pd.read_csv(path + 'DATA/' + name_of_response, index_col = False) ; RES = RES.drop(RES.columns[0], axis=1) 
 cell_feature = pd.read_csv(path + 'DATA/'  + name_of_cell_feature, index_col = False) ; cell_feature = cell_feature.drop(cell_feature.columns[0], axis=1)
@@ -35,7 +35,7 @@ repetition = 10
 for ite in range (0, repetition):    
     ## running factorization (Macau)
     result = macau.macau(Y = RES,
-                     Ytest      = 0.7,
+                     Ytest      = 0.1,  ## percentage of test set
                      side       = [None,None],
                      num_latent = num_latent,
                      precision  = "adaptive",

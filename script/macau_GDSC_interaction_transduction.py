@@ -16,7 +16,7 @@ path = "/home/my871390/MI_YANG/RWTH_Aachen/macau_work_dir/macau_test_sanger/"
 
 ## loading data
 name_of_response = 'IC50'   ## IC50_tissue
-name_of_cell_feature = 'GEX_SLC_ABC'   ## GEX_by_gene , GEX_SLC_ABC, progeny11 , progeny14 , GEX_paradigm , GEX_gsva_reactome , GEX_pathifier , GEX_SPIA, GEX_tissue
+name_of_cell_feature = 'progeny11'   ## GEX_by_gene , GEX_SLC_ABC, progeny11 , progeny14 , GEX_paradigm , GEX_gsva_reactome , GEX_pathifier , GEX_SPIA, GEX_tissue
 name_of_drug_feature = 'target'  ## target , pathway
 RES = pd.read_csv(path + 'DATA/' + name_of_response, index_col = False) ; RES = RES.drop(RES.columns[0], axis=1) 
 cell_feature = pd.read_csv(path + 'DATA/'  + name_of_cell_feature, index_col = False) ; cell_feature = cell_feature.drop(cell_feature.columns[0], axis=1)
