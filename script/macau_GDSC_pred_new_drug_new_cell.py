@@ -17,8 +17,8 @@ path = "/home/my871390/MI_YANG/RWTH_Aachen/macau_work_dir/macau_test_sanger/"
 
 
 ## loading data
-name_of_response = 'IC50_tissue'   #   IC50_target_Leiden   IC50  IC50_tissue
-name_of_cell_feature = 'GEX_tissue_OUT'  ##  GEX GEX_by_gene progeny14 GEX_SLC_ABC GEX_tissue_OUT
+name_of_response = 'IC50'   #   IC50_target_Leiden   IC50  IC50_tissue
+name_of_cell_feature = 'progeny11'  ##  progeny11 GEX GEX_by_gene GEX_SLC_ABC GEX_tissue_OUT
 name_of_drug_feature = 'target'   ##   pathway , target , target_pathway   target_Leiden
 ## loading data
 RES = pd.read_csv(path + 'DATA/' + name_of_response, index_col = False) ; RES = RES.drop(RES.columns[0], axis=1) 
@@ -56,8 +56,7 @@ for ite in range (0, repetition):
 
         cell_features_train, cell_features_test = cell_feature.iloc[ cell_train_index  , : ], cell_feature.iloc[ cell_test_index , : ]
         cell_features_train = scipy.sparse.coo_matrix(cell_features_train)
-        
-        
+       
         RES_train = RES.iloc[ drug_train_index , cell_train_index ]
         RES_train = scipy.sparse.coo_matrix(RES_train)
         
