@@ -23,13 +23,13 @@ os.chdir(path_tissue)
 prefixed = [filename for filename in os.listdir(path_tissue) if not filename.startswith('.') ] 
 prefixed = sorted(prefixed)
 
-for i in range( 4 , 5 ):      ## len(prefixed)      
+for i in range( 0 , len(prefixed) ):      ## len(prefixed)      
     ## SELECT THE TISSUE
     os.chdir(path_tissue + prefixed[i] + '/') 
     
     ## SELECT THE DATA
-    name_of_response = 'RES_CRISPR'   ##  RES   RES_GSVA_Reactome  RES_target_Leiden  RES_CRISPR
-    name_of_cell_feature = 'CRISPR'   ## progeny11  progeny14  GEX  SNP_CNV  TF_score 
+    name_of_response = 'RES'   ##  RES   RES_GSVA_Reactome  RES_target_Leiden  RES_CRISPR
+    name_of_cell_feature = 'progeny11'   ## progeny11  progeny14  GEX  SNP_CNV  TF_score 
     name_of_drug_feature = 'target'  ## target  target_Leiden
     result_folder = origin_path+'MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/'+ name_of_drug_feature+'_'+name_of_cell_feature
     
