@@ -17,7 +17,7 @@ path = "/home/my871390/MI_YANG/RWTH_Aachen/macau_work_dir/macau_test_sanger/"
 
 
 ## loading data
-name_of_response = 'IC50_tissue'  ## IC50   IC50_tissue
+name_of_response = 'IC50'  ## IC50   IC50_tissue
 name_of_cell_feature = 'progeny11'  ## GEX_tissue_OUT , GEX, progeny11 , progeny14 , NES_GDSC_VIPER , NES_GDSC_GSVA
 name_of_drug_feature = 'target'  ## target , pathway , target_pathway
 ## loading data
