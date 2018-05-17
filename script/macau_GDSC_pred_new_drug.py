@@ -18,7 +18,7 @@ path = "/home/my871390/MI_YANG/RWTH_Aachen/macau_work_dir/macau_test_sanger/"
 
 ## loading data
 name_of_response = 'IC50'    ##   IC50_ECFP4  IC50_target_Leiden  IC50
-name_of_cell_feature = 'GEX'  ## GEX progeny11
+name_of_cell_feature = 'progeny11'  ## GEX progeny11
 name_of_drug_feature = 'target'   ##   pathway , target , target_pathway , Target_Expansion  ECFP4  target_Leiden
 ## loading data
 RES = pd.read_csv(path + 'DATA/' + name_of_response, index_col = False) ; RES = RES.drop(RES.columns[0], axis=1) 
