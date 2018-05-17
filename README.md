@@ -1,4 +1,8 @@
 # Linking drug target and pathway activation for effective therapy using multi-task learning
+This repository describes the code used in the manuscript 
+
+Yang et al. Linking drug target and pathway activation for effective therapy using multi-task learning.
+https://www.biorxiv.org/content/early/2018/01/27/225573
 
 ## Introduction to Macau
 
