@@ -32,8 +32,8 @@ i = 2
 os.chdir(path_tissue + prefixed[i] + '/') 
 
 ## SELECT THE DATA
-name_of_response = 'RES_CRISPR'   ##  RES   RES_GSVA_Reactome  RES_target_Leiden  RES_CRISPR
-name_of_cell_feature = 'CRISPR'   ## progeny11  GEX  SNP_CNV  CRISPR
+name_of_response = 'RES'   ##  RES   RES_GSVA_Reactome  RES_target_Leiden  RES_CRISPR
+name_of_cell_feature = 'progeny11'   ## progeny11  GEX  SNP_CNV  CRISPR
 name_of_drug_feature = 'target'  ## target  target_Leiden
 interaction_folder = origin_path+'MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/'+ name_of_drug_feature+'_'+name_of_cell_feature 
 count_folder = origin_path+'MACAU_PROJECT/DATA_RESULT_STORAGE/TISSUE_SPECIFIC_GDSC/'+ name_of_drug_feature+'_'+name_of_cell_feature+'_PERMUTATION/'+prefixed[i]
