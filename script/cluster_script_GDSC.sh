@@ -24,6 +24,6 @@ export LD_LIBRARY_PATH=/home/my871390/.local/lib/python2.7/site-packages:$LD_LIB
 module switch intel gcc/6.3
 module load python
 
-python macau_GDSC_interaction_tissue_PERMUTATION.py
+python macau_GDSC.py
 
 ## "$tissue" 
