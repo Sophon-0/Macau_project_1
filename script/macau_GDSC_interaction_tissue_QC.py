@@ -30,7 +30,7 @@ for i in range( 8 , len(prefixed) ):      ## len(prefixed)
     
     ## SELECT THE DATA
     name_of_response = 'RES'         ## RES   RES_target_Leiden  
-    name_of_cell_feature = 'GEX_SLC_ABC' ## progeny11 progeny14 progeny_old11_new3 GEX GEX_by_gene GEX_SLC_ABC SNP_CNV TF_GSVA TF_VIPER 
+    name_of_cell_feature = 'progeny11' ## progeny11 progeny14 progeny_old11_new3 GEX GEX_by_gene GEX_SLC_ABC SNP_CNV TF_GSVA TF_VIPER 
     name_of_drug_feature = 'target'  ## target target_Leiden ECFP4
            
     RES = pd.read_csv(name_of_response, index_col = False); RES = RES.drop(RES.columns[0], axis=1) 
