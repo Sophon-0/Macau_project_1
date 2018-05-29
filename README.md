@@ -2,15 +2,13 @@
 This repository describes the code used in the manuscript 
 
 Yang et al. Linking drug target and pathway activation for effective therapy using multi-task learning.
-https://www.biorxiv.org/content/early/2018/01/27/225573
+https://www.nature.com/articles/s41598-018-25947-y
 
 ## Introduction to Macau
 
 Macau installation: https://github.com/jaak-s/macau
 
 Macau tutorial can be found here: http://macau.readthedocs.io/en/latest/source/examples.html#
-
-Macau pharmacogenomics paper: https://www.biorxiv.org/content/early/2018/01/27/225573
 
 Macau technical overview paper: http://ieeexplore.ieee.org/document/8168143/
 
