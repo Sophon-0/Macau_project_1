@@ -41,11 +41,11 @@ Step 3: use **macau_GDSC_interaction_tissue_PERMUTATION.py** to do random permut
 
 ## Plot the results:
 
-Analyse the drug response prediction result: **Drug_response_analysis.Rmd**
-
 Analysis feature interaction result: **GDSC_interaction_analysis_Tissue.Rmd**
 
 Scatter plot of the result using: **Scatter_plots.Rmd**
+
+Analyse the drug response prediction result: **Drug_response_analysis.Rmd**
 
 ## Simply download the results:
 
